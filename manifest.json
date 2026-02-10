@@ -1,5 +1,5 @@
 {
-  "background_color": "#ffffff",
+  "background_color": "#000000",
   "dir": "ltr",
   "display": "standalone",
   "name": "VERBATIM",
@@ -8,7 +8,7 @@
   "scope": "/",
   "short_name": "VERBATIM",
   "start_url": "index.html",
-  "theme_color": "#ffffff",
+  "theme_color": "#000000",
   "categories": [
     "entertainment",
     "games"
