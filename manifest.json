@@ -4,13 +4,14 @@
   "display": "standalone",
   "src": "icon.png",
   "name": "VERBATIM",
-  "orientation": "any",
+  "orientation": "portrait",
   "scope": "/",
   "short_name": "VERBATIM",
-  "start_url": "/",
+  "start_url": "index.html",
   "theme_color": "#ffffff",
   "categories": [
     "entertainment",
     "games"
-  ]
+  ],
+  "lang": "en"
 }
