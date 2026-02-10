@@ -2,7 +2,7 @@
   "background_color": "#ffffff",
   "dir": "ltr",
   "display": "standalone",
-  "src": "icon.png.png",
+  "src": "icon.png",
   "name": "VERBATIM",
   "orientation": "any",
   "scope": "/",
