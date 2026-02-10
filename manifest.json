@@ -2,10 +2,11 @@
   "background_color": "#ffffff",
   "dir": "ltr",
   "display": "standalone",
-  "name": "ranjd12.github",
+  "src": "icon.png.png",
+  "name": "VERBATIM",
   "orientation": "any",
   "scope": "/",
-  "short_name": "ranjd12.github",
+  "short_name": "VERBATIM",
   "start_url": "/",
   "theme_color": "#ffffff",
   "categories": [
