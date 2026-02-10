@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VERBATIM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://esm.sh/three@0.160.0",
+          "three/": "https://esm.sh/three@0.160.0/",
+          "three/addons/": "https://esm.sh/three@0.160.0/examples/jsm/",
+          "tone": "https://esm.sh/tone@14.7.77"
+        }
+      }
+    </script>
+    <style>
+      html, body { 
+        margin: 0; 
+        padding: 0; 
+        background-color: black; 
+        overflow: hidden; 
+        font-family: 'Crimson Text', serif;
+        color: white;
+        touch-action: none;
+      }
+      #ui-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      #crosshair {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 4px;
+        height: 4px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        display: none; 
+        z-index: 1000;
+      }
+      #prompt {
+        margin-top: 20px;
+        padding: 8px 16px;
+        font-size: 1.2rem;
+        background-color: rgba(0, 0, 0, 0.7);
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        text-shadow: 1px 1px 2px black;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+      }
+      
+      /* Inventory Container */
+      #inventory-container {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        z-index: 2005;
+        pointer-events: auto;
+      }
+
+      /* Main Equipped Slot */
+      #equipped-slot {
+        width: 80px;
+        height: 80px;
+        background-color: rgba(0, 0, 0, 0.7);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        transition: all 0.2s;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      }
+      
+      #equipped-slot.active {
+        border-color: #ffd700;
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+      }
+
+      #equipped-slot img {
+        width: 80%;
+        height: 80%;
+        object-fit: contain;
+        opacity: 0.8;
+      }
+
+      /* Inventory List (Items below) */
+      #inventory-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .inventory-item {
+        width: 50px;
+        height: 50px;
+        background-color: rgba(0, 0, 0, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.8rem;
+        cursor: pointer;
+        color: white;
+        user-select: none;
+        transition: all 0.2s;
+      }
+      
+      .inventory-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+
+      .inventory-item img {
+        width: 80%;
+        height: 80%;
+        object-fit: contain;
+      }
+
+      .inventory-item.active {
+        border-color: #ffd700;
+        background-color: rgba(255, 215, 0, 0.2);
+        box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.4), 0 0 10px rgba(255, 215, 0, 0.2);
+      }
+
+      #mobile-interact {
+        position: absolute;
+        bottom: 120px;
+        right: 20px;
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+        pointer-events: auto;
+        touch-action: none;
+        user-select: none;
+        z-index: 2000;
+      }
+      #mobile-interact:active {
+        background: rgba(255, 255, 255, 0.4);
+      }
+      #overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.2); 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 3000; 
+        transition: opacity 1s;
+        pointer-events: auto;
+      }
+      #overlay h1 {
+        font-size: 3rem;
+        letter-spacing: 0.5rem;
+        margin-bottom: 2rem;
+      }
+      #overlay button {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 15px 30px;
+        margin: 5px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        font-family: 'Crimson Text', serif;
+        font-weight: 400;
+        letter-spacing: 0.5rem;
+        text-transform: uppercase;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: auto;
+        min-width: 280px;
+        touch-action: manipulation;
+        outline: none;
+        position: relative;
+      }
+      #overlay button:hover {
+        color: #ffd700;
+        letter-spacing: 0.7rem;
+        text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+      }
+      #overlay button:active {
+        transform: scale(0.96);
+        color: #fff;
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+      }
+      #game-over {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        color: white;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 20;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading-screen" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 6000;
+        color: white;
+        transition: opacity 1s;
+    ">
+        <div style="letter-spacing: 0.8rem; font-size: 1.5rem; margin-bottom: 2rem; color: #888;">LOADING</div>
+        <div style="width: 250px; height: 2px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden;">
+            <div id="loading-bar" style="position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: white; transition: width 0.3s;"></div>
+        </div>
+        <div id="loading-status" style="margin-top: 1rem; font-size: 0.8rem; color: #555; letter-spacing: 0.2rem; text-transform: uppercase;">Waking up...</div>
+    </div>
+
+    <div id="intro-logo" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 5000;
+        opacity: 1;
+        transition: opacity 2s ease-in-out;
+        pointer-events: none;
+    ">
+        <img id="intro-logo-img" src="https://rosebud.ai/assets/!!Slob Life Games Logo without backround.png?YWeS" style="
+            max-width: 60%;
+            max-height: 60%;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        " />
+    </div>
+
+    <div id="ui-container">
+      <div id="crosshair"></div>
+      <div id="prompt">Interact</div>
+      
+      <div id="inventory-container">
+        <div id="equipped-slot"></div>
+        <div id="inventory-list"></div>
+      </div>
+      
+      <!-- Battery Meter -->
+      <div id="battery-container" style="
+        position: absolute;
+        bottom: 290px;
+        right: 35px;
+        width: 30px;
+        height: 100px;
+        background: rgba(0,0,0,0.6);
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 4px;
+        display: none;
+        flex-direction: column-reverse;
+        padding: 2px;
+        box-sizing: border-box;
+      ">
+        <div id="battery-level" style="
+            width: 100%;
+            height: 100%;
+            background-color: #ffd700;
+            transition: height 0.5s, background-color 0.5s;
+        "></div>
+        <div style="
+            position: absolute;
+            top: -10px;
+            left: 8px;
+            width: 10px;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+        "></div>
+      </div>
+
+      <div id="mobile-interact">USE</div>
+      
+      <!-- Subtitles -->
+      <div id="subtitles" style="
+        position: absolute;
+        bottom: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        text-align: center;
+        font-size: 1.4rem;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s;
+        z-index: 2100;
+        font-style: italic;
+      "></div>
+      
+      <!-- Flashlight Button (Hidden until acquired) -->
+      <div id="flashlight-btn" style="
+        position: absolute; 
+        bottom: 220px; 
+        right: 20px; 
+        width: 60px; 
+        height: 60px; 
+        background: rgba(0, 0, 0, 0.6); 
+        border: 2px solid rgba(255, 255, 255, 0.4); 
+        border-radius: 50%; 
+        display: none; 
+        justify-content: center; 
+        align-items: center; 
+        font-size: 30px; 
+        cursor: pointer; 
+        pointer-events: auto; 
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        transition: all 0.2s;
+        z-index: 2005;
+      ">🔦</div>
+
+      <button id="settings-button" style="position: absolute; top: 20px; right: 140px; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer; pointer-events: auto;">SETTINGS</button>
+      <button id="save-button" style="position: absolute; top: 20px; right: 20px; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer; pointer-events: auto;">SAVE & QUIT</button>
+    </div>
+
+    <!-- Settings Panel -->
+    <div id="settings-panel" style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 4000;
+        pointer-events: auto;
+    ">
+        <h2 style="letter-spacing: 0.5rem; margin-bottom: 2rem;">SETTINGS</h2>
+        
+        <div style="width: 300px; display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>LOOK SENSITIVITY</span>
+                    <span id="sensitivity-value">1.0</span>
+                </div>
+                <input type="range" id="sensitivity-slider" min="0.1" max="5.0" step="0.1" value="1.0" style="width: 100%; height: 30px; cursor: pointer;">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>FIELD OF VIEW</span>
+                    <span id="fov-value">75</span>
+                </div>
+                <input type="range" id="fov-slider" min="50" max="110" step="1" value="75" style="width: 100%; height: 30px; cursor: pointer;">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.9rem;">INVERT Y-AXIS</span>
+                    <div id="invert-y-btn" style="
+                        width: 100px;
+                        padding: 10px;
+                        background: rgba(255, 255, 255, 0.1);
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        text-align: center;
+                        font-size: 0.8rem;
+                        cursor: pointer;
+                        user-select: none;
+                    ">OFF</div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.9rem;">CROSSHAIR DOT</span>
+                    <div id="crosshair-btn" style="
+                        width: 100px;
+                        padding: 10px;
+                        background: rgba(255, 255, 255, 0.1);
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        text-align: center;
+                        font-size: 0.8rem;
+                        cursor: pointer;
+                        user-select: none;
+                    ">OFF</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 40px; align-items: center;">
+            <button id="report-button" style="
+                background: rgba(255,165,0,0.1);
+                border: 1px solid rgba(255,165,0,0.3);
+                color: rgba(255,255,255,0.7);
+                padding: 10px 20px;
+                cursor: pointer;
+                font-size: 0.8rem;
+                letter-spacing: 0.1rem;
+                transition: all 0.2s;
+            " onmouseover="this.style.background='rgba(255,165,0,0.2)'; this.style.color='white';" 
+               onmouseout="this.style.background='rgba(255,165,0,0.1)'; this.style.color='rgba(255,255,255,0.7)';"
+            >REPORT BUG/OFFENSIVE CONTENT</button>
+
+            <button id="restore-defaults" style="
+                background: rgba(255,0,0,0.1);
+                border: 1px solid rgba(255,0,0,0.3);
+                color: rgba(255,255,255,0.7);
+                padding: 10px 20px;
+                cursor: pointer;
+                font-size: 0.8rem;
+                letter-spacing: 0.1rem;
+                transition: all 0.2s;
+            " onmouseover="this.style.background='rgba(255,0,0,0.2)'; this.style.color='white';" 
+               onmouseout="this.style.background='rgba(255,0,0,0.1)'; this.style.color='rgba(255,255,255,0.7)';"
+            >RESTORE DEFAULTS</button>
+
+            <button id="close-settings" style="
+                background: transparent;
+                border: 1px solid rgba(255,255,255,0.3);
+                color: white;
+                padding: 10px 40px;
+                cursor: pointer;
+                letter-spacing: 0.2rem;
+            ">BACK</button>
+        </div>
+    </div>
+
+    <div id="overlay">
+      <!-- Title removed, rendered in 3D now -->
+      <div style="height: 200px;"></div> <!-- Spacer for where title was -->
+      <button id="start-button">NEW GAME</button>
+      <button id="load-button" style="margin-top: 10px;">LOAD GAME</button>
+      <button id="menu-settings-button" style="margin-top: 10px;">SETTINGS</button>
+    </div>
+
+    <div id="game-over">
+        <h1>YOU ESCAPED</h1>
+        <p>For now.</p>
+        <button id="return-to-menu" style="
+            margin-top: 30px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 30px;
+            cursor: pointer;
+            font-family: 'Crimson Text', serif;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">RETURN TO MENU</button>
+    </div>
+
+    <script type="module" src="main.js"></script>
+    <script src="https://storage.googleapis.com/rosebud_staticfiles/ChatManager.js"></script>
+    <script src="https://storage.googleapis.com/rosebud_staticfiles/ImageGenerator.js"></script>
+    <script src="https://storage.googleapis.com/rosebud_staticfiles/ProgressLogger.js"></script>
+    <script src="https://storage.googleapis.com/rosebud_staticfiles/OGP.js"></script>
+  </body>
+</html>
