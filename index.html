@@ -19,13 +19,7 @@
       }
     </script>
     <style>
-      html, body 
-      }if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js');
-      });
-    }
-      { 
+      html, body { 
         margin: 0; 
         padding: 0; 
         background-color: black; 
@@ -503,5 +497,12 @@
     <script src="https://storage.googleapis.com/rosebud_staticfiles/ImageGenerator.js"></script>
     <script src="https://storage.googleapis.com/rosebud_staticfiles/ProgressLogger.js"></script>
     <script src="https://storage.googleapis.com/rosebud_staticfiles/OGP.js"></script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js');
+    });
+  }
+</script>
   </body>
 </html>
