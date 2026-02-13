@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "io.github.ranjd12.twa",
-        "sha256_cert_fingerprints": ["3B:A7:E6:0C:A3:FA:84:7F:1B:1E:6D:2A:AE:EF:24:81:7D:9C:58:DF:D8:7D:82:90:E5:08:DB:A7:7C:2B:78:18"]
+        "sha256_cert_fingerprints": ["6D:46:B6:E7:01:D6:CD:5C:64:6C:63:10:F9:20:39:82:AC:78:41:14:46:5F:99:D8:89:B2:1C:CF:E3:C6:C0:E8"]
       }
     }]
