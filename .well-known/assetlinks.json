@@ -1,8 +1,15 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "io.github.ranjd12.twa",
-        "sha256_cert_fingerprints": ["6D:46:B6:E7:01:D6:CD:5C:64:6C:63:10:F9:20:39:82:AC:78:41:14:46:5F:99:D8:89:B2:1C:CF:E3:C6:C0:E8"]
-      }
-    }]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.ranjd12.twa",
+      "sha256_cert_fingerprints": [
+        "37:C0:A6:DD:39:AA:64:07:8B:98:45:78:0F:58:3F:1F:C7:8E:18:77:6D:1F:0C:AB:D0:EC:F2:BA:65:32:CC:C1"
+      ]
+    }
+  }
+]
